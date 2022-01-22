@@ -6,8 +6,8 @@ from .models import User
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=25, unique=True)
-    email = serializers.EmailField(max_length=80, unique=True)
+    username = serializers.CharField(max_length=25)
+    email = serializers.EmailField(max_length=80)
     phone_number = PhoneNumberField(allow_null=False, allow_blank=False)
     password = serializers.CharField(min_length=8)
 
