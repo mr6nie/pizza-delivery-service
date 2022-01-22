@@ -1,5 +1,9 @@
 from click import password_option
+
+from pizza.settings import DJOSER
+from django.db import IntegrityError
 from rest_framework import serializers
+from djoser.serializers import UserCreateSerializer
 from phonenumber_field.serializerfields import PhoneNumberField
 
 from .models import User
@@ -34,3 +38,26 @@ class UserCreationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(detail="User with phone number exists")
 
         return super().validate(attrs)
+
+    def create(self, validated_data):
+        try:
+            user = self.perform_create(validated_data)
+        except IntegrityError:
+            self.fail("cannot_create_user")
+
+        return user
+
+    def perform_create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        if DJOSER.SEND_ACTIVATION_EMAIL:
+            user.is_active = False
+            user.save(update_fields=["is_active"])
+        return user
+
+
+# class UserCreationSerializer(UserCreateSerializer):
+#     phone_number = PhoneNumberField(allow_null=False, allow_blank=False)
+
+#     class Meta(UserCreateSerializer.Meta):
+#         model = User
+#         fields = ["id", "username", "email", "phone_number", "password"]
